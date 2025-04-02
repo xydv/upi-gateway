@@ -1,5 +1,5 @@
 import { zValidator } from '@hono/zod-validator';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { SSEStreamingApi, streamSSE } from 'hono/streaming';
 import { z } from 'zod';
@@ -112,10 +112,35 @@ app.get('/sse/:id', zValidator('param', z.object({ id: z.string() })), async (c)
 	});
 });
 
+/**
+	webhook to update status (called from application only & authenticate using apikey)
+*/
+app.post('/wh', zValidator('json', z.object({ note: z.string() })), zValidator('header', z.object({ key: z.string() })), async (c) => {
+	const db = database(c.env.DB);
+	const { key } = c.req.valid('header');
+	const { note } = c.req.valid('json');
+
+	const merchant = await db.query.merchants.findFirst({ where: eq(merchants.key, key), columns: { id: true } });
+	if (!merchant) return c.text('invalid api key', 400);
+
+	const merchantRequestValid = and(eq(requests.note, note), eq(requests.merchant, merchant.id));
+
+	const request = await db.query.requests.findFirst({
+		where: merchantRequestValid,
+		columns: { id: true, status: true },
+	});
+
+	if (!request) return c.text('request not found', 400);
+	// if (request.status == 1) return c.text('already verified', 400);
+	await db.update(requests).set({ status: 1 }).where(merchantRequestValid);
+
+	return c.text('success');
+});
+
 async function sendEvent(stream: SSEStreamingApi, data: string, event: string) {
 	return await stream.writeSSE({
-		data: data,
-		event: event,
+		data,
+		event,
 		id: crypto.randomUUID(), // todo: log this or use this for debug
 	});
 }
