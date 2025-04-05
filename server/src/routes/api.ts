@@ -3,7 +3,7 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import { database } from '../db';
 import { merchants, requests } from '../db/schema';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 
 const router = new Hono<{ Bindings: Env }>();
 
@@ -30,7 +30,10 @@ router.post(
 	zValidator(
 		'json',
 		z.object({
-			amount: z.string().optional(),
+			amount: z
+				.string()
+				.regex(/^\d+(\.\d{1,2})?$/)
+				.optional(),
 		}),
 	),
 	zValidator(
@@ -92,28 +95,36 @@ router.get(
 
 router.post(
 	'/sendUpdate',
-	zValidator('json', z.object({ note: z.string(), amount: z.string().optional() })),
+	zValidator(
+		'json',
+		z.object({
+			note: z.string(),
+			amount: z
+				.string()
+				.regex(/^\d+(\.\d{1,2})?$/)
+				.optional(),
+		}),
+	),
 	zValidator('header', z.object({ key: z.string() })),
 	async (c) => {
 		const db = database(c.env.DB);
 		const { key } = c.req.valid('header');
-		const { note } = c.req.valid('json');
+		const { note, amount } = c.req.valid('json');
 
 		const merchant = await db.query.merchants.findFirst({ where: eq(merchants.key, key), columns: { id: true } });
 		if (!merchant) return c.text('invalid api key', 400);
 
-		const merchantRequestValid = and(eq(requests.note, note), eq(requests.merchant, merchant.id));
+		const merchantRequestValid = and(eq(requests.note, note), eq(requests.amount, amount || sql`NULL`), eq(requests.merchant, merchant.id));
 
 		const request = await db.query.requests.findFirst({
 			where: merchantRequestValid,
 			columns: { id: true, status: true },
 		});
-
 		if (!request) return c.text('request not found', 400);
-		// if (request.status == 1) return c.text('already verified', 400);
+
 		await db.update(requests).set({ status: 1 }).where(merchantRequestValid);
 
-		return c.text('success');
+		return c.json([1]);
 	},
 );
 

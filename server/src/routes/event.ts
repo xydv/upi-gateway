@@ -9,7 +9,7 @@ import { sendEvent } from '../utils/sendEvent';
 
 const router = new Hono<{ Bindings: Env }>();
 
-// add api check
+// add key check
 router.get('/:id', zValidator('param', z.object({ id: z.string() })), async (c) => {
 	const db = database(c.env.DB);
 	const { id } = c.req.valid('param');
