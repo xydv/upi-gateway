@@ -32,7 +32,7 @@ router.post(
 		z.object({
 			amount: z
 				.string()
-				.regex(/^\d+(\.\d{1,2})?$/)
+				.regex(/^\d+(\.\d{2})$/)
 				.optional(),
 		}),
 	),
@@ -101,7 +101,7 @@ router.post(
 			note: z.string(),
 			amount: z
 				.string()
-				.regex(/^\d+(\.\d{1,2})?$/)
+				.regex(/^\d+(\.\d{2})$/)
 				.optional(),
 		}),
 	),
