@@ -4,18 +4,19 @@ export enum MESSAGE {
 	WEBHOOK_DELETED = 'Webhook Was Deleted',
 	REQUEST_NOT_FOUND = 'Request Not Found',
 	SERVER_ERROR = 'Internal Server Error',
+	SUCCESS = 'Success',
 }
 
-enum PAYMENT_STATUS {
-	PENDING = 0,
-	SUCCESS = 1,
-	EXPIRED = 2,
-	CANCELLED = 3,
+export enum WEBHOOK_TYPE {
+	SUCCESS = 'SUCCESS',
+	EXPIRED = 'EXPIRED',
+	CANCELLED = 'CANCELLED',
 }
 
 export type WEBHOOK_DATA = {
+	type: WEBHOOK_TYPE;
 	webhookId: string;
 	requestId: string;
-	status: PAYMENT_STATUS;
+	status: number;
 	timestamp: number;
 };

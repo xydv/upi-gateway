@@ -5,7 +5,7 @@ import { database } from '../db';
 import { merchants, requests } from '../db/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import qrImage from 'qr-image';
-import { MESSAGE } from '../utils/types';
+import { MESSAGE, WEBHOOK_TYPE } from '../utils/types';
 import { sendWebhook } from '../utils/sendWebhook';
 
 const router = new Hono<{ Bindings: Env }>();
@@ -101,7 +101,7 @@ router.post(
 		const { amount } = c.req.valid('json');
 
 		const merchant = await db.query.merchants.findFirst({ where: eq(merchants.key, key), columns: { key: false } });
-		if (!merchant) return c.text('invalid api key', 400);
+		if (!merchant) return c.text(MESSAGE.INVALID_KEY, 400);
 
 		const [{ id, note }] = await db
 			.insert(requests)
@@ -124,6 +124,58 @@ router.post(
 );
 
 router.get(
+	'/getRequest/:id',
+	zValidator(
+		'param',
+		z.object({
+			id: z.string(),
+		}),
+	),
+	zValidator(
+		'header',
+		z.object({
+			key: z.string(),
+		}),
+	),
+	async (c) => {
+		const db = database(c.env.DB);
+		const { key } = c.req.valid('header');
+		const { id } = c.req.valid('param');
+
+		const merchant = await db.query.merchants.findFirst({
+			where: eq(merchants.key, key),
+			columns: { key: false },
+		});
+
+		if (!merchant) return c.text(MESSAGE.INVALID_KEY, 400);
+
+		const request = await db.query.requests.findFirst({
+			where: and(eq(requests.merchant, merchant.id), eq(requests.id, id)),
+			columns: { merchant: false },
+		});
+
+		if (!request) return c.text(MESSAGE.REQUEST_NOT_FOUND, 400);
+
+		const qrObject = {
+			pa: merchant.vpa,
+			pn: merchant.name,
+			tn: request.note,
+			am: request.amount || '',
+			cu: merchant.currency,
+		};
+
+		const uri = 'upi://pay?' + new URLSearchParams(qrObject).toString();
+		const qr = 'data:image/png;base64,' + qrImage.imageSync(uri, { type: 'png' }).toString('base64');
+
+		return c.json(
+			(({ note, ...others }) => {
+				return { ...others, uri, qr };
+			})(request),
+		);
+	},
+);
+
+router.get(
 	'/allRequests',
 	zValidator(
 		'header',
@@ -139,7 +191,7 @@ router.get(
 			where: eq(merchants.key, key),
 			columns: { key: false },
 		});
-		if (!merchant) return c.text('invalid api key', 400);
+		if (!merchant) return c.text(MESSAGE.INVALID_KEY, 400);
 
 		const allRequests = await db.query.requests.findMany({
 			where: eq(requests.merchant, merchant.id),
@@ -182,12 +234,17 @@ router.post(
 
 		await db.update(requests).set({ status: 1 }).where(merchantRequestValid);
 
-		// send webhook if exists
 		if (merchant.webhook) {
-			await sendWebhook(merchant.webhook, { webhookId: crypto.randomUUID(), requestId: request.id, status: 1, timestamp: Date.now() });
+			await sendWebhook(merchant.webhook, {
+				type: WEBHOOK_TYPE.SUCCESS,
+				webhookId: crypto.randomUUID(),
+				requestId: request.id,
+				status: 1,
+				timestamp: Date.now(),
+			});
 		}
 
-		return c.json([1]);
+		return c.text(MESSAGE.SUCCESS);
 	},
 );
 
