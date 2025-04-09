@@ -8,8 +8,9 @@ export const merchants = sqliteTable('merchants', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => crypto.randomUUID()),
-	name: text('name').notNull(),
-	vpa: text('vpa').notNull(),
+	name: text('name').notNull(), // mandatory as per upi spec v1.6
+	vpa: text('vpa').notNull(), // mandatory as per upi spec v1.6
+	webhook: text('webhook'),
 	currency: text('currency').notNull().default('INR'),
 	key: text('key')
 		.notNull()
@@ -22,7 +23,10 @@ export const requests = sqliteTable('requests', {
 		.$defaultFn(() => crypto.randomUUID()),
 	amount: text('amount'),
 	note: text('note').notNull().$defaultFn(nanoidCustom),
-	status: integer('status').notNull().default(0), // 0 -> pending, 1 -> success, 2 (maybe future) -> expired
+	status: integer('status').notNull().default(0), // 0 -> pending, 1 -> success, 2 -> expired, 3 -> cancelled
+	timestamp: integer('timestamp', { mode: 'timestamp_ms' })
+		.notNull()
+		.$defaultFn(() => new Date()),
 	merchant: text('merchant')
 		.notNull()
 		.references(() => merchants.id),

@@ -8,6 +8,27 @@
       "when": 1743602887361,
       "tag": "0000_cloudy_justice",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1744043805918,
+      "tag": "0001_calm_weapon_omega",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1744044123249,
+      "tag": "0002_lyrical_mentor",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1744214398619,
+      "tag": "0003_yielding_fenris",
+      "breakpoints": true
     }
   ]
 }
