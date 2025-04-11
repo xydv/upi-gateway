@@ -7,6 +7,7 @@ import { sendWebhook } from '../utils/sendWebhook';
 import { MESSAGE, WEBHOOK_TYPE } from '../utils/types';
 import {
 	allRequestsValidator,
+	cancelRequestValidator,
 	createKeyValidator,
 	createRequestValidator,
 	getRequestValidator,
@@ -110,11 +111,45 @@ router.get('/getRequest', getRequestValidator, keyValidator, async (c) => {
 	);
 });
 
+router.post('/cancelRequest', cancelRequestValidator, keyValidator, async (c) => {
+	const db = database(c.env.DB);
+	const { key } = c.req.valid('header');
+	const { id } = c.req.valid('json');
+
+	const merchant = await db.query.merchants.findFirst({ where: eq(merchants.key, key), columns: { id: true, webhook: true } });
+	if (!merchant) return c.text(MESSAGE.INVALID_KEY, 400);
+
+	const request = await db.query.requests.findFirst({
+		where: and(eq(requests.id, id), eq(requests.merchant, merchant.id)),
+		columns: { id: true, status: true },
+	});
+
+	if (!request) return c.text(MESSAGE.REQUEST_NOT_FOUND, 400);
+	if ([2, 3].includes(request.status)) return c.text(MESSAGE.EXPIRED_OR_CANCELLED, 400);
+
+	await db
+		.update(requests)
+		.set({ status: 3 })
+		.where(and(eq(requests.id, id), eq(requests.merchant, merchant.id)));
+
+	if (merchant.webhook) {
+		await sendWebhook(merchant.webhook, {
+			type: WEBHOOK_TYPE.CANCELLED,
+			webhookId: crypto.randomUUID(),
+			requestId: id,
+			status: 3,
+			timestamp: Date.now(),
+		});
+	}
+
+	return c.text(MESSAGE.SUCCESS);
+});
+
 router.get('/allRequests', allRequestsValidator, keyValidator, async (c) => {
 	const db = database(c.env.DB);
 	const { key } = c.req.valid('header');
 	const { page } = c.req.valid('query');
-	const PAGE_SIZE = 2;
+	const PAGE_SIZE = 15;
 
 	const merchant = await db.query.merchants.findFirst({
 		where: eq(merchants.key, key),
@@ -148,7 +183,9 @@ router.post('/sendUpdate', sendUpdateValidator, keyValidator, async (c) => {
 		where: merchantRequestValid,
 		columns: { id: true, status: true },
 	});
+
 	if (!request) return c.text(MESSAGE.REQUEST_NOT_FOUND, 400);
+	if ([2, 3].includes(request.status)) return c.text(MESSAGE.EXPIRED_OR_CANCELLED, 400);
 
 	await db.update(requests).set({ status: 1 }).where(merchantRequestValid);
 

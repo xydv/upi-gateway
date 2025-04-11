@@ -25,13 +25,13 @@ router.get('/:id', zValidator('param', z.object({ id: z.string() })), async (c) 
 				return await stream.close();
 			}
 
-			if (response.status === 1) {
-				await sendEvent(stream, JSON.stringify([1]));
+			if ([1, 2, 3].includes(response.status)) {
+				await sendEvent(stream, JSON.stringify([response.status]));
 				return await stream.close();
 			}
 
 			if (!pending) {
-				await sendEvent(stream, JSON.stringify([0]));
+				await sendEvent(stream, JSON.stringify([response.status]));
 			}
 
 			pending = true;
