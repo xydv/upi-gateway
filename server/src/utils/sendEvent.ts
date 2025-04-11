@@ -1,6 +1,6 @@
 import { SSEStreamingApi } from 'hono/streaming';
 
-export async function sendEvent(stream: SSEStreamingApi, data: string, event: string, enableLogs: boolean = false) {
+export async function sendEvent(stream: SSEStreamingApi, data: string, event: string = 'update', enableLogs: boolean = false) {
 	const randomId = crypto.randomUUID();
 
 	if (enableLogs) {

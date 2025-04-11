@@ -9,28 +9,32 @@ import { sendEvent } from '../utils/sendEvent';
 
 const router = new Hono<{ Bindings: Env }>();
 
-// add key check
 router.get('/:id', zValidator('param', z.object({ id: z.string() })), async (c) => {
 	const db = database(c.env.DB);
 	const { id } = c.req.valid('param');
 
 	return streamSSE(c, async (stream) => {
-		await sendEvent(stream, JSON.stringify([-2]), 'update');
+		let pending = false;
+		await sendEvent(stream, JSON.stringify([-2]));
 
 		while (true) {
 			const response = await db.query.requests.findFirst({ where: eq(requests.id, id), columns: { status: true } });
 
 			if (!response) {
-				await sendEvent(stream, JSON.stringify([-1]), 'update');
+				await sendEvent(stream, JSON.stringify([-1]));
 				return await stream.close();
 			}
 
 			if (response.status === 1) {
-				await sendEvent(stream, JSON.stringify([1]), 'update');
+				await sendEvent(stream, JSON.stringify([1]));
 				return await stream.close();
 			}
 
-			await sendEvent(stream, JSON.stringify([0]), 'update');
+			if (!pending) {
+				await sendEvent(stream, JSON.stringify([0]));
+			}
+
+			pending = true;
 			await stream.sleep(5000);
 		}
 	});

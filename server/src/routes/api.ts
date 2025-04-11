@@ -6,6 +6,7 @@ import { merchants, requests } from '../db/schema';
 import { sendWebhook } from '../utils/sendWebhook';
 import { MESSAGE, WEBHOOK_TYPE } from '../utils/types';
 import {
+	allRequestsValidator,
 	createKeyValidator,
 	createRequestValidator,
 	getRequestValidator,
@@ -109,9 +110,11 @@ router.get('/getRequest', getRequestValidator, keyValidator, async (c) => {
 	);
 });
 
-router.get('/allRequests', keyValidator, async (c) => {
+router.get('/allRequests', allRequestsValidator, keyValidator, async (c) => {
 	const db = database(c.env.DB);
 	const { key } = c.req.valid('header');
+	const { page } = c.req.valid('query');
+	const PAGE_SIZE = 2;
 
 	const merchant = await db.query.merchants.findFirst({
 		where: eq(merchants.key, key),
@@ -123,6 +126,8 @@ router.get('/allRequests', keyValidator, async (c) => {
 		where: eq(requests.merchant, merchant.id),
 		columns: { merchant: false, note: false },
 		orderBy: (requests, { desc }) => [desc(requests.timestamp)],
+		limit: PAGE_SIZE,
+		offset: (parseInt(page) - 1) * PAGE_SIZE,
 	});
 
 	return c.json(allRequests);
@@ -136,6 +141,7 @@ router.post('/sendUpdate', sendUpdateValidator, keyValidator, async (c) => {
 	const merchant = await db.query.merchants.findFirst({ where: eq(merchants.key, key), columns: { id: true, webhook: true } });
 	if (!merchant) return c.text(MESSAGE.INVALID_KEY, 400);
 
+	// check amount ??
 	const merchantRequestValid = and(eq(requests.note, note), eq(requests.amount, amount || sql`NULL`), eq(requests.merchant, merchant.id));
 
 	const request = await db.query.requests.findFirst({

@@ -34,6 +34,13 @@ export const getRequestValidator = zValidator(
 	}),
 );
 
+export const allRequestsValidator = zValidator(
+	'query',
+	z.object({
+		page: z.string().default('1'),
+	}),
+);
+
 export const sendUpdateValidator = zValidator(
 	'json',
 	z.object({
