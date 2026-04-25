@@ -16,8 +16,7 @@ import {
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppConfig } from '../types';
-import { TopBar } from '../components/top-bar';
-import { API_URL } from '../utils';
+import UpiGateway from 'upigateway';
 
 export default function SettingsScreen() {
   const [key, setKey] = useState('');
@@ -50,14 +49,9 @@ export default function SettingsScreen() {
   const appsQuery = useQuery({
     queryKey: ['app-configs'],
     queryFn: async () => {
-      const response = await fetch(`https://upi.234892.xyz/apps`, {
-        headers: {
-          key: (await AsyncStorage.getItem('key')) || '',
-        },
-      });
-      const data = (await response.json()) as AppConfig[];
-      await AsyncStorage.setItem('apps', JSON.stringify(data));
-      return data;
+      const response = await UpiGateway.getApps() as AppConfig[];
+      await AsyncStorage.setItem('apps', JSON.stringify(response));
+      return response;
     },
     refetchOnWindowFocus: true,
     enabled: !!key,

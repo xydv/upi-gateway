@@ -11,7 +11,7 @@ import {
   useTheme,
 } from 'react-native-paper';
 import { Request } from '../types';
-import { API_URL } from '../utils';
+import { API_BASE_URL } from 'upigateway';
 
 export default function HomeScreen() {
   const theme = useTheme();
@@ -19,7 +19,7 @@ export default function HomeScreen() {
   const getAllRequestsQuery = useQuery({
     queryKey: ['all-requests'],
     queryFn: async () => {
-      const response = await fetch(`${API_URL}/allRequests`, {
+      const response = await fetch(`${API_BASE_URL}allRequests`, {
         headers: {
           key: (await AsyncStorage.getItem('key')) || '',
         },

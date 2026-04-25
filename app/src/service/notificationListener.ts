@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {type AppConfig, type Notification} from '../types/index';
-import {serverSender} from './serverSender';
+import { type AppConfig, type Notification } from '../types/index';
+import { serverSender } from './serverSender';
 
 export const notificationListenerService = async ({
   notification,
@@ -23,7 +23,7 @@ export const notificationListenerService = async ({
       return;
     }
 
-    const {note, amount} = upiApp;
+    const { note, amount } = upiApp;
 
     const amountSource = (parsedNotification as any)[amount.source] || '';
     const amountMatch = new RegExp(amount.regex).exec(amountSource);

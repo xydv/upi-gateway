@@ -1,18 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_URL } from '../utils';
+import UpiGateway from "upigateway";
 
 export async function serverSender(note: string, amount: string) {
   const key = (await AsyncStorage.getItem('key')) || '';
-
-  return await fetch(`${API_URL}/sendUpdate`, {
-    body: JSON.stringify({
-      note,
-      amount,
-    }),
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      key,
-    },
-  });
+  const upigateway = new UpiGateway(key);
+  return await upigateway.sendUpdate({ note, amount });
 }
