@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {useQuery} from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import React from 'react';
-import {RefreshControl, ScrollView, StyleSheet, View} from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import {
   ActivityIndicator,
   Badge,
@@ -10,8 +10,8 @@ import {
   Text,
   useTheme,
 } from 'react-native-paper';
-import {Request} from '../types';
-import {API_URL} from '../utils';
+import { Request } from '../types';
+import { API_URL } from '../utils';
 
 export default function HomeScreen() {
   const theme = useTheme();
@@ -46,8 +46,8 @@ export default function HomeScreen() {
     return (
       <View style={styles.mainView}>
         <Chip
-          style={{backgroundColor: theme.colors.tertiary}}
-          textStyle={[styles.chipText, {color: theme.colors.onTertiary}]}>
+          style={{ backgroundColor: theme.colors.tertiary }}
+          textStyle={[styles.chipText, { color: theme.colors.onTertiary }]}>
           please set a valid api key
         </Chip>
       </View>
@@ -65,8 +65,8 @@ export default function HomeScreen() {
       <View style={styles.mainView}>
         {getAllRequestsQuery.data.length === 0 && (
           <Chip
-            style={{backgroundColor: theme.colors.onTertiary}}
-            textStyle={[styles.chipText, {color: theme.colors.tertiary}]}>
+            style={{ backgroundColor: theme.colors.onTertiary }}
+            textStyle={[styles.chipText, { color: theme.colors.tertiary }]}>
             no requests found
           </Chip>
         )}
@@ -79,7 +79,7 @@ export default function HomeScreen() {
                     size={9}
                     style={[
                       styles.status,
-                      {backgroundColor: getStatusTextAndColor(r.status).color},
+                      { backgroundColor: getStatusTextAndColor(r.status).color },
                     ]}
                   />
                   <Text variant="bodyLarge">
@@ -100,11 +100,11 @@ export default function HomeScreen() {
 function getStatusTextAndColor(status: number) {
   switch (status) {
     case 0:
-      return {text: 'payment pending', color: '#ff6600'};
+      return { text: 'payment pending', color: '#ff6600' };
     case 1:
-      return {text: 'payment success', color: '#5cb85c'};
+      return { text: 'payment success', color: '#5cb85c' };
     default:
-      return {text: 'payment expired', color: '#c21808'};
+      return { text: 'payment expired', color: '#c21808' };
   }
 }
 

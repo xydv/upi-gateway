@@ -26,3 +26,16 @@ export type Request = {
   amount: string | null;
   note: string;
 };
+
+export type ConfigField = {
+  optional: boolean;
+  source: string;
+  regex: string;
+};
+
+export type AppConfig = {
+  name: string;
+  packageName: string;
+  note: ConfigField;
+  amount: ConfigField;
+};

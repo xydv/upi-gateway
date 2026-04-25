@@ -1,9 +1,9 @@
 import React from 'react';
-import {StatusBar, StyleSheet} from 'react-native';
-import {useTheme} from 'react-native-paper';
-import {TopBar} from './components/top-bar';
-import {SafeAreaView} from 'react-native-safe-area-context';
-import {BottomNavigation} from 'react-native-paper';
+import { StatusBar, StyleSheet } from 'react-native';
+import { useTheme } from 'react-native-paper';
+import { TopBar } from './components/top-bar';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { BottomNavigation } from 'react-native-paper';
 import HomeScreen from './screens/home';
 import SettingsScreen from './screens/settings';
 
@@ -32,7 +32,7 @@ export default function App() {
 
   return (
     <SafeAreaView
-      style={[styles.container, {backgroundColor: theme.colors.background}]}>
+      style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <StatusBar
         barStyle={theme.dark ? 'light-content' : 'dark-content'}
         backgroundColor={theme.colors.background}
@@ -40,7 +40,7 @@ export default function App() {
       <TopBar />
       <BottomNavigation
         labeled={false}
-        navigationState={{index, routes}}
+        navigationState={{ index, routes }}
         onIndexChange={setIndex}
         renderScene={renderScene}
         sceneAnimationEnabled
