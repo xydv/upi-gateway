@@ -1,6 +1,6 @@
 {
   "name": "upigateway",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "a simple upi gateway (sdk)",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

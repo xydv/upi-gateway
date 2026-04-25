@@ -42,3 +42,21 @@ export type getRequestResponse = {
   uri: string;
   qr: string;
 };
+
+export type sendUpdateArgs = {
+  note: string;
+  amount: string;
+};
+
+export type AppConfig = {
+  optional: boolean;
+  source: string;
+  regex: string;
+};
+
+export type App = {
+  name: string;
+  packageName: string;
+  note: AppConfig;
+  amount: AppConfig;
+};

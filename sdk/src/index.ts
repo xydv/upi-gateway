@@ -1,5 +1,6 @@
 import axios, { RawAxiosRequestHeaders, Method } from "axios";
 import type {
+  App,
   cancelRequestArgs,
   cancelRequestResponse,
   createKeyArgs,
@@ -9,6 +10,7 @@ import type {
   deleteWebhookResponse,
   getRequestArgs,
   getRequestResponse,
+  sendUpdateArgs,
   setWebhookArgs,
   setWebhookResponse,
 } from "./types";
@@ -99,9 +101,26 @@ class UpiGateway {
 
     return data as getRequestResponse;
   }
+
+  async sendUpdate(args: sendUpdateArgs): Promise<boolean> {
+    const { status } = await UpiGateway.sendRequest(
+      "POST",
+      "cancelRequest",
+      { "content-type": "application/json", key: this.apiKey },
+      args,
+    );
+
+    return status == 200;
+  }
+
+  static async getApps(): Promise<App[]> {
+    const { data } = await axios.get(APP_BASE_URL);
+    return data as App[];
+  }
 }
 
 export default UpiGateway;
 export * from "./types";
+export const APP_BASE_URL = "https://upi.234892.xyz/apps";
 export const API_BASE_URL = "https://upi.234892.xyz/api/";
 export const EVENT_BASE_URL = "https://upi.234892.xyz/event/";
