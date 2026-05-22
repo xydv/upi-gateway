@@ -105,7 +105,7 @@ class UpiGateway {
   async sendUpdate(args: sendUpdateArgs): Promise<boolean> {
     const { status } = await UpiGateway.sendRequest(
       "POST",
-      "cancelRequest",
+      "sendUpdate",
       { "content-type": "application/json", key: this.apiKey },
       args,
     );
